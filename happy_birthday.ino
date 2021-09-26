@@ -1,11 +1,15 @@
 int speakerPin = 9;
-
 int length = 29; // the number of notes
+char notes[] = "GGAGcBGGAGdcGGxeccBAyyecdc ";
 
-char notes[] = "GGAGcB GGAGdc GGxecBA yyecdc ";
+// calculate durations for each tone: subtract one beat for each pause between every two tones
+// 10-1 = 1/16, 20-1 = 1/8, 30-1 = 3/16 = 1/8 *, 40-1=1/4, 80-1=1/2
+int beats[] = { 29, 9, 39, 39, 39, 79, 29, 9, 39, 39,
+                39, 79, 29, 9, 39, 39, 29, 9, 39, 39, 
+                29, 9, 39, 39, 39, 79, 159};
 
-int beats[] = { 2, 2, 8, 8, 8, 16, 1, 2, 2, 8, 8, 8, 16, 1, 2, 2, 8, 8, 8, 8, 16, 1, 2, 2, 8, 8, 8, 16, 8};
-int tempo = 150;
+int tempo = 60;
+bool played = false;
 
 void playTone(int tone, int duration) {
   for (long i = 0; i < duration * 1000L; i += tone * 2) {
@@ -14,6 +18,7 @@ void playTone(int tone, int duration) {
     digitalWrite(speakerPin, LOW);
     delayMicroseconds(tone);
   }
+
 }
 
 void playNote(char note, int duration) {
@@ -21,12 +26,10 @@ void playNote(char note, int duration) {
                   'c', 'd', 'e', 'f', 'g', 'a', 'b',
                   'x', 'y'
                  };
-
   int tones[] = { 1915, 1700, 1519, 1432, 1275, 1136, 1014,
                   956,  834,  765,  593,  468,  346,  224,
-                  655 , 715
+                  635 , 715
                 };
-
   int SPEE = 5;
 
   // play the tone corresponding to the note name
@@ -38,19 +41,28 @@ void playNote(char note, int duration) {
   }
 }
 
-void setup() {
-  pinMode(speakerPin, OUTPUT);
-}
-
-void loop() {
-  for (int i = 0; i < length; i++) {
+void playMelody() {
+    for (int i = 0; i < length; i++) {
     if (notes[i] == ' ') {
       delay(beats[i] * tempo); // rest
     } else {
       playNote(notes[i], beats[i] * tempo);
     }
-
     // pause between notes
     delay(tempo);
   }
+}
+
+void setup() {
+  played = false;
+  pinMode(speakerPin, OUTPUT);
+}
+
+
+void loop() {
+    // play melody only once, require reset-button to replay
+    if (!played) {
+      playMelody();
+      played = true;      
+    }
 }
